@@ -1,19 +1,74 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"io"
+	"io/fs"
 	"log"
 	"net/http"
 
+	"github.com/comame/router-go"
 	"github.com/comame/vote/core"
 )
 
-func getIndex(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "Hello, world!")
+//go:embed static
+var embedFs embed.FS
+
+func handleGetStatic(w http.ResponseWriter, r *http.Request) {
+	f, err := fs.Sub(embedFs, "static")
+	if err != nil {
+		panic(err)
+	}
+	handler := http.FileServer(http.FS(f))
+	handler.ServeHTTP(w, r)
 }
 
-func newTopicGeneric(w http.ResponseWriter, r *http.Request) {
+func handleGetTopic(w http.ResponseWriter, r *http.Request) {
+	p := router.Params(r)
+	id := p["id"]
+
+	topic, err := getTopic(r.Context(), id)
+	if err != nil {
+		responseError(w, err)
+		return
+	}
+
+	switch topic.Type {
+	case core.TopicGeneric:
+		choices, err := getChoiceGeneric(r.Context(), id)
+		if err != nil {
+			responseError(w, err)
+			return
+		}
+		res, err := json.Marshal(core.ResponseGetTopicGeneric{
+			Topic:   *topic,
+			Choices: choices,
+		})
+		if err != nil {
+			responseError(w, err)
+			return
+		}
+		w.Write(res)
+	case core.TopicCalendar:
+		choices, err := getChoiceCalendar(r.Context(), id)
+		if err != nil {
+			responseError(w, err)
+			return
+		}
+		res, err := json.Marshal(core.ResponseGetTopicCalendar{
+			Topic:   *topic,
+			Choices: choices,
+		})
+		if err != nil {
+			responseError(w, err)
+			return
+		}
+		w.Write(res)
+	}
+}
+
+func handleNewTopicGeneric(w http.ResponseWriter, r *http.Request) {
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		responseError(w, err)
@@ -41,7 +96,7 @@ func newTopicGeneric(w http.ResponseWriter, r *http.Request) {
 	resopnseBody(w, res)
 }
 
-func newTopicCalendar(w http.ResponseWriter, r *http.Request) {
+func handleNewTopicCalendar(w http.ResponseWriter, r *http.Request) {
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		responseError(w, err)

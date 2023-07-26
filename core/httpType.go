@@ -10,6 +10,10 @@ type TopicCalendarWithChoices struct {
 	Choices []ChoiceCalendar `json:"choices"`
 }
 
+type ResponseGetTopicGeneric = TopicGenericWithChoises
+
+type ResponseGetTopicCalendar = TopicCalendarWithChoices
+
 type RequestCreateTopicGeneric = TopicGenericWithChoises
 
 type ResponseCreateTopicGeneric = response[TopicGenericWithChoises]

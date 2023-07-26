@@ -2,10 +2,16 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	"github.com/comame/mysql-go"
 	"github.com/comame/vote/core"
 	"github.com/google/uuid"
+)
+
+var (
+	ErrNotFound = core.NewUserError(errors.New("not found"))
 )
 
 // MySQL の場合 Primary Key に設定することでパフォーマンスの劣化があるが、どうせ大して使われないだろうという予測と、
@@ -16,6 +22,68 @@ func generateUUIDv4() (string, error) {
 		return "", err
 	}
 	return u.String(), nil
+}
+
+func getTopic(ctx context.Context, topicId string) (*core.Topic, error) {
+	db := mysql.Conn()
+
+	var topic core.Topic
+	row := db.QueryRowContext(ctx, "SELECT id,name,type FROM topic WHERE id=?", topicId)
+
+	if err := row.Scan(&topic.Id, &topic.Name, &topic.Type); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	return &topic, nil
+}
+
+func getChoiceGeneric(ctx context.Context, topicId string) ([]core.ChoiceGeneric, error) {
+	db := mysql.Conn()
+
+	var choices []core.ChoiceGeneric
+	rows, err := db.QueryContext(ctx, "SELECT id,topic_id,`order`,`text` FROM choice_generic WHERE topic_id=?", topicId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	for rows.Next() {
+		var choice core.ChoiceGeneric
+		if err := rows.Scan(&choice.Id, &choice.TopicId, &choice.Order, &choice.Text); err != nil {
+			return nil, err
+		}
+		choices = append(choices, choice)
+	}
+
+	return choices, nil
+}
+
+func getChoiceCalendar(ctx context.Context, topicId string) ([]core.ChoiceCalendar, error) {
+	db := mysql.Conn()
+
+	var choices []core.ChoiceCalendar
+	rows, err := db.QueryContext(ctx, "SELECT id,topic_id,`order`,is_all_day,start_datetime,end_datetime FROM choice_calendar WHERE topic_id=?", topicId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	for rows.Next() {
+		var choice core.ChoiceCalendar
+		if err := rows.Scan(&choice.Id, &choice.TopicId, &choice.Order, &choice.IsAllDay, &choice.StartDateTime, &choice.EndDateTime); err != nil {
+			return nil, err
+		}
+		choices = append(choices, choice)
+	}
+
+	return choices, nil
 }
 
 func createTopicGeneric(
@@ -30,6 +98,9 @@ func createTopicGeneric(
 		if err := core.AssertChoiceGeneric(choice); err != nil {
 			return nil, nil, err
 		}
+	}
+	if len(choices) == 0 {
+		return nil, nil, core.ErrInvalidFormat
 	}
 
 	topicId, err := generateUUIDv4()
@@ -92,6 +163,9 @@ func createTopicCalendar(
 		if err := core.AssertChoiceCalendar(choice); err != nil {
 			return nil, nil, err
 		}
+	}
+	if len(choices) == 0 {
+		return nil, nil, core.ErrInvalidFormat
 	}
 
 	topicId, err := generateUUIDv4()

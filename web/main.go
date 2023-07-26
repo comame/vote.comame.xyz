@@ -15,10 +15,12 @@ func init() {
 }
 
 func main() {
-	router.Get("/", getIndex)
+	router.Get("/api/topic/get/:id", handleGetTopic)
 
-	router.Post("/api/topic/new/generic", newTopicGeneric)
-	router.Post("/api/topic/new/calendar", newTopicCalendar)
+	router.Post("/api/topic/new/generic", handleNewTopicGeneric)
+	router.Post("/api/topic/new/calendar", handleNewTopicCalendar)
+
+	router.Get("/*", handleGetStatic)
 
 	log.Println("Start http://localhost:8080")
 	http.ListenAndServe(":8080", router.Handler())
