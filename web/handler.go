@@ -156,6 +156,11 @@ func handleGetVote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(v) == 0 {
+		// 明示的に空配列にしたい
+		v = make([]core.Vote, 0)
+	}
+
 	res := core.ResponseGetVote{
 		Body: v,
 	}
