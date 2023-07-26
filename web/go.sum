@@ -1,4 +1,12 @@
+github.com/comame/mysql-go v1.0.0 h1:KjXXQVahtKaKUU11TGKZlStwiqX0l1YdQTo3wRj1NeI=
+github.com/comame/mysql-go v1.0.0/go.mod h1:ZiB2oY9HDlWJB5kIiYPN5unuf6PINe4CKvCvFIHR9Ks=
+github.com/comame/mysql-go v1.0.1 h1:SoBeeXC5+OURGroyh3uP4tx8jj9bbkKZ8QzUcfibpKw=
+github.com/comame/mysql-go v1.0.1/go.mod h1:ZiB2oY9HDlWJB5kIiYPN5unuf6PINe4CKvCvFIHR9Ks=
+github.com/comame/readenv-go v1.1.0 h1:EcPkZp9UatknLVbENLj7Sgtp9SiCo+Q2XVMMWr2IzuY=
+github.com/comame/readenv-go v1.1.0/go.mod h1:+YyWGrxgTS9LYUUTREDlTKT6WG2755SzUA9331pSK8M=
 github.com/comame/router-go v1.3.0 h1:Rtb++ZMbKbwxfvHB9jhaoy+P1qHVYmUCIpL892TicVE=
 github.com/comame/router-go v1.3.0/go.mod h1:30KnxJAAZnoG9zFHVDuWFsmT2fKZXjX7hrQuhZBz+IY=
+github.com/go-sql-driver/mysql v1.7.1 h1:lUIinVbN1DY0xBg0eMOzmmtGoHwWBbvnWubQUrtU8EI=
+github.com/go-sql-driver/mysql v1.7.1/go.mod h1:OXbVy3sEdcQ2Doequ6Z5BW6fXNQTmx+9S1MCJN5yJMI=
 github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
 github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
