@@ -204,10 +204,10 @@ func createTopicCalendar(
 		}
 
 		if _, err := tx.ExecContext(ctx,
-			"INSERT INTO choice_calendar"+
-				"(id, topic_id, `order`, is_all_day, start_datetime, end_datetime)"+
-				"VALUES"+
-				"(?, ?, ?, ?, ?, ?)",
+			"INSERT INTO choice_calendar "+
+				"(id, topic_id, `order`, is_all_day, start_datetime, end_datetime) "+
+				"VALUES "+
+				"(?, ?, ?, ?, ?, ?) ",
 			choiceId, topicId, choices[i].Order, choices[i].IsAllDay, choices[i].StartDateTime, choices[i].EndDateTime); err != nil {
 			return nil, nil, err
 		}
@@ -218,4 +218,52 @@ func createTopicCalendar(
 	}
 
 	return &topic, choices, nil
+}
+
+func getVote(ctx context.Context, topicId string) ([]core.Vote, error) {
+	db := mysql.Conn()
+
+	var votes []core.Vote
+
+	rows, err := db.QueryContext(ctx,
+		"SELECT v.id, v.user_name, v.choice_id FROM vote AS v "+
+			"LEFT OUTER JOIN choice_generic AS g ON g.id = v.choice_id "+
+			"LEFT OUTER JOIN choice_calendar AS c ON c.id = v.choice_id "+
+			"WHERE g.topic_id = ? OR c.topic_id = ? ",
+		topicId, topicId,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var vote core.Vote
+		if err := rows.Scan(&vote.Id, &vote.UserName, &vote.ChoiceId); err != nil {
+			return nil, err
+		}
+		votes = append(votes, vote)
+	}
+
+	return votes, nil
+}
+
+func createVote(ctx context.Context, vote core.Vote) (*core.Vote, error) {
+	voteId, err := generateUUIDv4()
+	if err != nil {
+		return nil, err
+	}
+
+	vote.Id = voteId
+
+	db := mysql.Conn()
+
+	if _, err := db.ExecContext(
+		ctx,
+		"INSERT INTO vote (id,user_name,choice_id) VALUES (?, ?, ?)",
+		voteId, vote.UserName, vote.ChoiceId,
+	); err != nil {
+		return nil, err
+	}
+
+	return &vote, nil
 }

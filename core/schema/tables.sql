@@ -22,14 +22,7 @@ CREATE TABLE `choice_calendar` (
     FOREIGN KEY (`topic_id`) REFERENCES `topic`(`id`) ON DELETE CASCADE
 );
 
-CREATE TABLE `vote_generic` (
-    `id` varchar(36) PRIMARY KEY NOT NULL,
-    `user_name` text NOT NULL,
-    `choice_id` varchar(36) NOT NULL,
-    FOREIGN KEY (`choice_id`) REFERENCES `choice_generic`(`id`)
-);
-
-CREATE TABLE `vote_calendar` (
+CREATE TABLE `vote` (
     `id` varchar(36) PRIMARY KEY NOT NULL,
     `user_name` text NOT NULL,
     `choice_id` varchar(36) NOT NULL,

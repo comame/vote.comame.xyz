@@ -17,6 +17,9 @@ func init() {
 func main() {
 	router.Get("/api/topic/get/:id", handleGetTopic)
 
+	router.Get("/api/vote/get/:id", handleGetVote)
+	router.Post("/api/vote/new", handleCreateVote)
+
 	router.Post("/api/topic/new/generic", handleNewTopicGeneric)
 	router.Post("/api/topic/new/calendar", handleNewTopicCalendar)
 

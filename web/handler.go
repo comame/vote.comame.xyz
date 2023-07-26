@@ -124,6 +124,44 @@ func handleNewTopicCalendar(w http.ResponseWriter, r *http.Request) {
 	resopnseBody(w, res)
 }
 
+func handleCreateVote(w http.ResponseWriter, r *http.Request) {
+	b, err := io.ReadAll(r.Body)
+	if err != nil {
+		responseError(w, err)
+		return
+	}
+
+	var req core.RequestCreateVote
+	if err := json.Unmarshal(b, &req); err != nil {
+		responseError(w, err)
+		return
+	}
+
+	if _, err := createVote(r.Context(), req); err != nil {
+		responseError(w, err)
+		return
+	}
+
+	res := core.ResponseCreateVote{}
+	resopnseBody(w, res)
+}
+
+func handleGetVote(w http.ResponseWriter, r *http.Request) {
+	p := router.Params(r)
+	topicId := p["id"]
+
+	v, err := getVote(r.Context(), topicId)
+	if err != nil {
+		responseError(w, err)
+		return
+	}
+
+	res := core.ResponseGetVote{
+		Body: v,
+	}
+	resopnseBody(w, res)
+}
+
 func responseError(w http.ResponseWriter, err error) {
 	body := core.ResponseError{
 		Error:   true,

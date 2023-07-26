@@ -22,9 +22,11 @@ type RequestCreateTopicCalendar = TopicCalendarWithChoices
 
 type ResponseCreateTopicCalendar = response[TopicCalendarWithChoices]
 
-type RequestVote = Vote
+type RequestCreateVote = Vote
 
-type ResponseVote = response[struct{}]
+type ResponseCreateVote = response[struct{}]
+
+type ResponseGetVote = response[[]Vote]
 
 type ResponseError = response[struct{}]
 
