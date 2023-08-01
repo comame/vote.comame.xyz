@@ -7,6 +7,10 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
+	"os"
+	"strings"
 
 	"github.com/comame/router-go"
 	"github.com/comame/vote/core"
@@ -16,12 +20,45 @@ import (
 var embedFs embed.FS
 
 func handleGetStatic(w http.ResponseWriter, r *http.Request) {
+	isDev := os.Getenv("DEV")
+	if strings.TrimSpace(isDev) != "" {
+		handleViteDevServer(w, r)
+		return
+	}
+
 	f, err := fs.Sub(embedFs, "static")
 	if err != nil {
 		panic(err)
 	}
 	handler := http.FileServer(http.FS(f))
 	handler.ServeHTTP(w, r)
+}
+
+func handleViteDevServer(w http.ResponseWriter, r *http.Request) {
+	sourcePathPrefix := []string{
+		"/topic",
+		"vote",
+	}
+	isSource := false
+	for _, p := range sourcePathPrefix {
+		if strings.HasPrefix(r.URL.Path, p) {
+			isSource = true
+		}
+	}
+
+	viteDevServerHost := "http://localhost:5173"
+	if isSource {
+		viteDevServerHost = "http://localhost:5173/front"
+	}
+
+	newUrl, _ := url.Parse(viteDevServerHost)
+
+	rp := &httputil.ReverseProxy{
+		Rewrite: func(r *httputil.ProxyRequest) {
+			r.SetURL(newUrl)
+		},
+	}
+	rp.ServeHTTP(w, r)
 }
 
 func handleGetTopic(w http.ResponseWriter, r *http.Request) {
